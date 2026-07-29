@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Unipolmove",
+        "description": "Inserisci le credenziali della tua area clienti Unipolmove (www.unipolmove.it) e il numero di contratto (lo trovi nel tuo profilo, formato tipo P000012345).",
+        "data": {
+          "username": "Email",
+          "password": "Password",
+          "contract_id": "Numero contratto"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Unipolmove: sessione scaduta",
+        "description": "La sessione non e' piu' valida. Reinserisci username e password.",
+        "data": {
+          "username": "Email",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Credenziali non valide",
+      "cannot_connect": "Impossibile contattare Unipolmove",
+      "unknown": "Errore imprevisto"
+    },
+    "abort": {
+      "already_configured": "Questo contratto e' gia' configurato",
+      "reauth_successful": "Sessione aggiornata con successo"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "importo_fattura": { "name": "Importo Fattura" },
+      "data_fattura": { "name": "Data Fattura" },
+      "stato": { "name": "Stato" },
+      "costo_transiti": { "name": "Costo Transiti" },
+      "costo_area_c": { "name": "Costo Area C" },
+      "costo_parcheggi": { "name": "Costo Parcheggi" },
+      "costo_traghetti": { "name": "Costo Traghetti" }
+    }
+  }
+}

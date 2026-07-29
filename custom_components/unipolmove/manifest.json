@@ -1,0 +1,11 @@
+{
+  "domain": "unipolmove",
+  "name": "Unipolmove",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://www.unipolmove.it/app/private-area",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "version": "0.1.0"
+}
