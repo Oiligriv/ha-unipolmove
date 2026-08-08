@@ -55,6 +55,13 @@ class CostiAggregati:
     parcheggi: float | None
     traghetti: float | None
     prenotazione_parcheggi: float | None
+    # Same figures net of the agreements ("convenzioni") on the contract. On a
+    # contract without any they equal the gross ones.
+    transiti_scontato: float | None = None
+    area_c_scontato: float | None = None
+    parcheggi_scontato: float | None = None
+    traghetti_scontato: float | None = None
+    prenotazione_parcheggi_scontato: float | None = None
 
 
 @dataclass
@@ -108,6 +115,11 @@ def _parse_costi(raw: dict) -> CostiAggregati:
         parcheggi=raw.get("importoParcheggi"),
         traghetti=raw.get("importoTraghetti"),
         prenotazione_parcheggi=raw.get("importoPrenotazioneParcheggi"),
+        transiti_scontato=raw.get("importoScontatoTransiti"),
+        area_c_scontato=raw.get("importoScontatoAreaC"),
+        parcheggi_scontato=raw.get("importoScontatoParcheggi"),
+        traghetti_scontato=raw.get("importoScontatoTraghetti"),
+        prenotazione_parcheggi_scontato=raw.get("importoScontatoPrenotazioneParcheggi"),
     )
 
 

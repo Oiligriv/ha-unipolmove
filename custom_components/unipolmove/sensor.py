@@ -46,6 +46,13 @@ class UnipolmoveEntity(CoordinatorEntity[UnipolmoveCoordinator], SensorEntity):
         data = self.coordinator.data
         return data.latest_invoice if data else None
 
+    def _discounted(self, field: str):
+        """Return the agreement-adjusted amount, for use as an attribute."""
+        data = self.coordinator.data
+        if not data or not data.costi:
+            return {}
+        return {"importo_scontato": getattr(data.costi, field)}
+
 
 class UnipolmoveImportoSensor(UnipolmoveEntity):
     _attr_translation_key = "importo_fattura"
@@ -114,6 +121,10 @@ class UnipolmoveCostoTransitiSensor(UnipolmoveEntity):
         data = self.coordinator.data
         return data.costi.transiti if data and data.costi else None
 
+    @property
+    def extra_state_attributes(self):
+        return self._discounted("transiti_scontato")
+
 
 class UnipolmoveCostoAreaCSensor(UnipolmoveEntity):
     _attr_translation_key = "costo_area_c"
@@ -128,6 +139,10 @@ class UnipolmoveCostoAreaCSensor(UnipolmoveEntity):
     def native_value(self):
         data = self.coordinator.data
         return data.costi.area_c if data and data.costi else None
+
+    @property
+    def extra_state_attributes(self):
+        return self._discounted("area_c_scontato")
 
 
 class UnipolmoveCostoParcheggiSensor(UnipolmoveEntity):
@@ -149,7 +164,11 @@ class UnipolmoveCostoParcheggiSensor(UnipolmoveEntity):
         data = self.coordinator.data
         if not data or not data.costi:
             return {}
-        return {"prenotazione_parcheggi": data.costi.prenotazione_parcheggi}
+        return {
+            "importo_scontato": data.costi.parcheggi_scontato,
+            "prenotazione_parcheggi": data.costi.prenotazione_parcheggi,
+            "prenotazione_parcheggi_scontato": data.costi.prenotazione_parcheggi_scontato,
+        }
 
 
 class UnipolmoveCostoTraghettiSensor(UnipolmoveEntity):
@@ -165,3 +184,7 @@ class UnipolmoveCostoTraghettiSensor(UnipolmoveEntity):
     def native_value(self):
         data = self.coordinator.data
         return data.costi.traghetti if data and data.costi else None
+
+    @property
+    def extra_state_attributes(self):
+        return self._discounted("traghetti_scontato")
