@@ -1,11 +1,12 @@
 {
   "domain": "unipolmove",
   "name": "Unipolmove",
-  "codeowners": [],
+  "codeowners": ["@Oiligriv"],
   "config_flow": true,
-  "documentation": "https://www.unipolmove.it/app/private-area",
+  "documentation": "https://github.com/Oiligriv/ha-unipolmove",
   "integration_type": "service",
   "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/Oiligriv/ha-unipolmove/issues",
   "requirements": [],
   "version": "1.0.0"
 }
