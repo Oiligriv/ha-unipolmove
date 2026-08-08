@@ -1,12 +1,14 @@
 """The Unipolmove integration."""
 from __future__ import annotations
 
+import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
-from .api import UnipolmoveApiClient
+from .api import UnipolmoveApiClient, UnipolmoveApiError, UnipolmoveAuthError
 from .const import CONF_CONTRACT_ID, CONF_PASSWORD, CONF_USERNAME, DOMAIN
 from .coordinator import UnipolmoveCoordinator
 
@@ -21,7 +23,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_PASSWORD],
         entry.data[CONF_CONTRACT_ID],
     )
-    await api.async_login()
+    # Both outcomes have to be told apart here, or the entry just fails to set
+    # up: a rejected password needs the reauth flow, while an unreachable site
+    # only needs Home Assistant to try again later.
+    try:
+        await api.async_login()
+    except UnipolmoveAuthError as err:
+        raise ConfigEntryAuthFailed(str(err)) from err
+    except (UnipolmoveApiError, aiohttp.ClientError, TimeoutError) as err:
+        raise ConfigEntryNotReady(str(err)) from err
 
     coordinator = UnipolmoveCoordinator(hass, entry, api)
     await coordinator.async_config_entry_first_refresh()
