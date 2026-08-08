@@ -11,15 +11,19 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import date
 
+import aiohttp
+
 _LOGGER = logging.getLogger(__name__)
 
 from .const import (
     BASE_URL,
     CONTESTO_UTENTE_URL,
     COSTI_AGGREGATI_URL_TEMPLATE,
+    ENVIRONMENT_URL,
     FATTURE_URL_TEMPLATE,
     IBM_CLIENT_ID,
     IBM_CLIENT_SECRET,
+    IBM_HEADER_SETS,
     LOGIN_PAGE_URL,
     LOGIN_URL,
     USER_AGENT,
@@ -114,6 +118,7 @@ class UnipolmoveApiClient:
         self._password = password
         self._contract_id = contract_id
         self._session_id = uuid.uuid4().hex
+        self._ibm_config: dict | None = None
 
     @property
     def session(self):
@@ -122,6 +127,49 @@ class UnipolmoveApiClient:
     def set_credentials(self, username: str, password: str) -> None:
         self._username = username
         self._password = password
+
+    async def _async_ibm_config(self) -> dict:
+        """Fetch and cache the web app's own API Connect configuration."""
+        if self._ibm_config is not None:
+            return self._ibm_config
+        try:
+            async with self._session.get(
+                ENVIRONMENT_URL, headers={"User-Agent": USER_AGENT}
+            ) as resp:
+                if resp.status != 200:
+                    raise UnipolmoveApiError(f"environment.json status {resp.status}")
+                # Served as text/plain, so content-type checking has to be off.
+                data = await resp.json(content_type=None)
+        except (aiohttp.ClientError, ValueError, UnipolmoveApiError) as err:
+            _LOGGER.warning(
+                "Unipolmove: could not read environment.json (%s); falling back to "
+                "the built-in telepedaggio-us credentials, so aggregate costs will "
+                "not be available",
+                err,
+            )
+            self._ibm_config = {}
+        else:
+            self._ibm_config = data.get("apiConnect", {})
+        return self._ibm_config
+
+    async def _ibm_headers_for(self, url: str) -> dict:
+        """Return the client id/secret pair the gateway serving this URL expects.
+
+        Each API Connect gateway has its own subscription, and sending one
+        gateway's pair to another is rejected with a 401 even though the session
+        cookie is perfectly valid. The web app makes the same choice from the
+        URL; IBM_HEADER_SETS mirrors that mapping.
+        """
+        config = await self._async_ibm_config()
+        for prefix, config_key in IBM_HEADER_SETS:
+            if prefix in url:
+                if block := config.get(config_key):
+                    return {
+                        "x-ibm-client-id": block["x-ibm-client-id"],
+                        "x-ibm-client-secret": block["x-ibm-client-secret"],
+                    }
+                break
+        return {"x-ibm-client-id": IBM_CLIENT_ID, "x-ibm-client-secret": IBM_CLIENT_SECRET}
 
     def _headers(self, *, api: bool, referer: str = BASE_URL + "/") -> dict:
         # X-UNIPOL-SEQUENCEID is NOT an incrementing per-request counter: a
@@ -139,9 +187,8 @@ class UnipolmoveApiClient:
             "X-UNIPOL-REQUESTID": str(uuid.uuid4()),
             "X-UNIPOL-SEQUENCEID": "0",
         }
-        if api:
-            headers["x-ibm-client-id"] = IBM_CLIENT_ID
-            headers["x-ibm-client-secret"] = IBM_CLIENT_SECRET
+        # The x-ibm-* pair is added by the callers instead, through
+        # _ibm_headers_for(), because which pair is correct depends on the URL.
         return headers
 
     async def async_login(self) -> None:
@@ -172,9 +219,9 @@ class UnipolmoveApiClient:
             if resp.status != 200:
                 raise UnipolmoveAuthError(f"Login fallito (status {resp.status}): {body[:200]}")
 
-        async with self._session.get(
-            CONTESTO_UTENTE_URL, headers=self._headers(api=True)
-        ) as resp:
+        headers = self._headers(api=True)
+        headers.update(await self._ibm_headers_for(CONTESTO_UTENTE_URL))
+        async with self._session.get(CONTESTO_UTENTE_URL, headers=headers) as resp:
             body = await resp.text()
             # This response is the account holder's profile (email, name), and
             # nothing is parsed out of it beyond the presence of "email", so
@@ -192,7 +239,9 @@ class UnipolmoveApiClient:
                 raise UnipolmoveAuthError("Login fallito: credenziali non valide (nessuna email in risposta)")
 
     async def _get_json(self, url: str) -> dict:
-        async with self._session.get(url, headers=self._headers(api=True)) as resp:
+        headers = self._headers(api=True)
+        headers.update(await self._ibm_headers_for(url))
+        async with self._session.get(url, headers=headers) as resp:
             body = await resp.text()
             _LOGGER.debug("Unipolmove GET %s -> status=%s body=%s", url, resp.status, body[:500])
             if resp.status in (401, 403):
@@ -211,11 +260,10 @@ class UnipolmoveApiClient:
         fatture_raw = await self._get_json(fatture_url)
 
         # costiAggregati lives behind a different IBM API Connect gateway
-        # (portale-tlpd/servizi-mobilita vs telepedaggio-us) than the other
-        # endpoints, and has been observed returning 401 "Invalid client id
-        # or secret" with the same credentials that work fine for fatture/
-        # contesto-utente - likely needs its own client id/secret we don't
-        # have yet. Treat it as optional so invoices still work meanwhile.
+        # (portale-tlpd/servizi-mobilita vs telepedaggio-us) and needs that
+        # gateway's own client id/secret, which _ibm_headers_for() now selects.
+        # Still optional: if environment.json cannot be read the correct pair is
+        # unavailable and this 401s again, and invoices should keep working.
         try:
             costi_raw = await self._get_json(costi_url)
             costi = _parse_costi(costi_raw)
