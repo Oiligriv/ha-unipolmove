@@ -3,16 +3,16 @@
     "step": {
       "user": {
         "title": "Unipolmove",
-        "description": "Inserisci le credenziali della tua area clienti Unipolmove (www.unipolmove.it) e il numero di contratto (lo trovi nel tuo profilo, formato tipo P000012345).",
+        "description": "Enter the credentials of your Unipolmove customer area (www.unipolmove.it) and your contract number (you can find it in your profile, in the form P000012345).",
         "data": {
           "username": "Email",
           "password": "Password",
-          "contract_id": "Numero contratto"
+          "contract_id": "Contract number"
         }
       },
       "reauth_confirm": {
-        "title": "Unipolmove: sessione scaduta",
-        "description": "La sessione non e' piu' valida. Reinserisci username e password.",
+        "title": "Unipolmove: session expired",
+        "description": "The session is no longer valid. Enter your username and password again.",
         "data": {
           "username": "Email",
           "password": "Password"
@@ -20,24 +20,24 @@
       }
     },
     "error": {
-      "invalid_auth": "Credenziali non valide",
-      "cannot_connect": "Impossibile contattare Unipolmove",
-      "unknown": "Errore imprevisto"
+      "invalid_auth": "Invalid credentials",
+      "cannot_connect": "Cannot reach Unipolmove",
+      "unknown": "Unexpected error"
     },
     "abort": {
-      "already_configured": "Questo contratto e' gia' configurato",
-      "reauth_successful": "Sessione aggiornata con successo"
+      "already_configured": "This contract is already configured",
+      "reauth_successful": "Session updated successfully"
     }
   },
   "entity": {
     "sensor": {
-      "importo_fattura": { "name": "Importo Fattura" },
-      "data_fattura": { "name": "Data Fattura" },
-      "stato": { "name": "Stato" },
-      "costo_transiti": { "name": "Costo Transiti" },
-      "costo_area_c": { "name": "Costo Area C" },
-      "costo_parcheggi": { "name": "Costo Parcheggi" },
-      "costo_traghetti": { "name": "Costo Traghetti" }
+      "importo_fattura": { "name": "Invoice amount" },
+      "data_fattura": { "name": "Invoice date" },
+      "stato": { "name": "Status" },
+      "costo_transiti": { "name": "Toll cost" },
+      "costo_area_c": { "name": "Area C cost" },
+      "costo_parcheggi": { "name": "Parking cost" },
+      "costo_traghetti": { "name": "Ferry cost" }
     }
   }
 }

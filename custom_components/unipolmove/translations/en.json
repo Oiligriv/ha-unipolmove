@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Unipolmove",
+        "description": "Enter the credentials of your Unipolmove customer area (www.unipolmove.it) and your contract number (you can find it in your profile, in the form P000012345).",
+        "data": {
+          "username": "Email",
+          "password": "Password",
+          "contract_id": "Contract number"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Unipolmove: session expired",
+        "description": "The session is no longer valid. Enter your username and password again.",
+        "data": {
+          "username": "Email",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid credentials",
+      "cannot_connect": "Cannot reach Unipolmove",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This contract is already configured",
+      "reauth_successful": "Session updated successfully"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "importo_fattura": { "name": "Invoice amount" },
+      "data_fattura": { "name": "Invoice date" },
+      "stato": { "name": "Status" },
+      "costo_transiti": { "name": "Toll cost" },
+      "costo_area_c": { "name": "Area C cost" },
+      "costo_parcheggi": { "name": "Parking cost" },
+      "costo_traghetti": { "name": "Ferry cost" }
+    }
+  }
+}
