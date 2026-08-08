@@ -26,6 +26,18 @@ sessione scade.
 
 ## Installazione
 
+Richiede Home Assistant 2024.11 o successivo.
+
+### HACS (consigliato)
+
+[![Apri la tua istanza Home Assistant e apri questo repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Oiligriv&repository=ha-unipolmove&category=integration)
+
+Poi **Download**, e riavvia Home Assistant.
+
+Se il bottone non raggiunge la tua istanza: HACS → menu **⋮** → **Custom repositories** → incolla `https://github.com/Oiligriv/ha-unipolmove`, categoria **Integration** → **Add**.
+
+### Manuale
+
 1. Copia `custom_components/unipolmove` in `config/custom_components/` della tua installazione Home Assistant
 2. Riavvia Home Assistant
 
