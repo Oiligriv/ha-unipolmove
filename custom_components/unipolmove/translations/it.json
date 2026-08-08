@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Unipolmove",
-        "description": "Inserisci le credenziali della tua area clienti Unipolmove (www.unipolmove.it) e il numero di contratto (lo trovi nel tuo profilo, formato tipo P000012345).",
+        "description": "Inserisci le credenziali della tua area clienti Unipolmove e il numero di contratto (lo trovi nel tuo profilo, formato tipo P000012345).",
         "data": {
           "username": "Email",
           "password": "Password",
