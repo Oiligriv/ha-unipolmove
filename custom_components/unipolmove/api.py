@@ -164,10 +164,11 @@ class UnipolmoveApiClient:
             headers=self._headers(api=False, referer=LOGIN_PAGE_URL),
         ) as resp:
             body = await resp.text()
-            _LOGGER.debug(
-                "Unipolmove login POST -> status=%s headers=%s body=%s",
-                resp.status, dict(resp.headers), body[:500],
-            )
+            # Neither the response headers nor the body are logged here: the
+            # headers carry the Set-Cookie session token, and debug logs are
+            # routinely pasted into bug reports. The body is only quoted below
+            # when the login actually failed, where it is an error message.
+            _LOGGER.debug("Unipolmove login POST -> status=%s", resp.status)
             if resp.status != 200:
                 raise UnipolmoveAuthError(f"Login fallito (status {resp.status}): {body[:200]}")
 
@@ -175,10 +176,10 @@ class UnipolmoveApiClient:
             CONTESTO_UTENTE_URL, headers=self._headers(api=True)
         ) as resp:
             body = await resp.text()
-            _LOGGER.debug(
-                "Unipolmove contesto-utente GET -> status=%s body=%s",
-                resp.status, body[:500],
-            )
+            # This response is the account holder's profile (email, name), and
+            # nothing is parsed out of it beyond the presence of "email", so
+            # there is no reason to put it in a log file.
+            _LOGGER.debug("Unipolmove contesto-utente GET -> status=%s", resp.status)
             if resp.status != 200:
                 raise UnipolmoveAuthError(
                     f"Login fallito: credenziali non valide (contesto-utente status {resp.status}: {body[:200]})"
