@@ -24,8 +24,28 @@ COSTI_AGGREGATI_URL_TEMPLATE = (
     f"{BASE_URL}/api/ut/prv/unipolmove/portale-tlpd/servizi-mobilita/v1/contratti/{{contract_id}}/costiAggregati"
 )
 
+# The web app does not embed these: it fetches them at startup from a public
+# config file, one set per API Connect gateway, and picks a set per request from
+# the URL (see _ibm_headers_for in api.py). Reading the same file keeps working
+# if a key is rotated.
+ENVIRONMENT_URL = f"{BASE_URL}/app/config/environment.json"
+
+# The set used for /api/us/prv/... (telepedaggio-us). Kept as a fallback for
+# when environment.json cannot be fetched, since it is the one the invoice
+# endpoints need and those are what the integration is mostly about.
 IBM_CLIENT_ID = "035c8aa2-51fd-4f44-8d87-9535a1d4f8b6"
 IBM_CLIENT_SECRET = "Y1oO6hC0oQ5fC3wL5bL6qB5oE8jN5mD0dL1jC5pC0iW5jR7mL6"
+
+# Which config key serves which URL prefix. The mobility-service entry is the
+# specific case and has to be tested first: its paths also start with /ut/prv/.
+# Sending the /api/us/prv/ set to costiAggregati is what produced the
+# "Invalid client id or secret" 401 that left the cost sensors empty.
+IBM_HEADER_SETS = (
+    ("/ut/prv/unipolmove/portale-tlpd/servizi-mobilita/", "headers_ut_prv_mobility_service"),
+    ("/ut/prv/", "headers_ut_prv"),
+    ("/ut/pub/", "headers_ut_pub"),
+    ("/us/prv/", "headers_us"),
+)
 
 # aiohttp's default User-Agent identifies itself as a Python library, which
 # BigIP (the WAF actually fronting this site - see the "Server: BigIP"
